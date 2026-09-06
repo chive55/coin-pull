@@ -1,8 +1,10 @@
-# Coin Pull
+# Coin Rush
 
 Hold to move. Eat the lime coins. Red ends the run.
 
 One-life portrait browser arcade. Best score lives in your browser.
+
+Repo folder is still `coin-pull`. The game title is Coin Rush.
 
 ## Play
 
