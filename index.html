@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <title>Coin Rush</title>
-  <meta name="description" content="Hold to move. Eat the lime coins. Red ends the run.">
+  <meta name="description" content="Hold to move. Grab the coins. Red ends the run.">
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -42,7 +42,7 @@
     <div id="score">0</div>
     <div id="panel">
       <h1>COIN RUSH</h1>
-      <p id="blurb">Hold to move. Eat the lime. Red ends the run.</p>
+      <p id="blurb">Hold to move. Grab the coins. Red ends the run.</p>
       <p>Best: <span id="best">0</span></p>
       <button id="go" type="button">Play</button>
     </div>
@@ -102,7 +102,7 @@
 
     function addCoin() {
       const p = farFromPlayer();
-      coins.push({ x: p.x, y: p.y, r: 9, w: Math.random() * 6 });
+      coins.push({ x: p.x, y: p.y, r: 12, w: Math.random() * 6, spin: rnd(-2.2, 2.2) });
     }
 
     function addDrone() {
@@ -156,7 +156,7 @@
         document.getElementById("best").textContent = String(best);
       }
       blurb.textContent = score === 0
-        ? "Hold to move. Eat the lime. Red ends the run."
+        ? "Hold to move. Grab the coins. Red ends the run."
         : "Pulled " + score + " coin" + (score === 1 ? "" : "s") + ".";
       go.textContent = "Again";
       panel.classList.remove("hidden");
@@ -225,11 +225,12 @@
         for (let i = coins.length - 1; i >= 0; i--) {
           const q = coins[i];
           q.w += dt * 4;
+          q.rot = (q.rot || 0) + dt * q.spin;
           if (dist(player, q) < player.r + q.r) {
             coins.splice(i, 1);
             score++;
             scoreEl.textContent = String(score);
-            burst(q.x, q.y, "#7cff6b", 14);
+            burst(q.x, q.y, "#ffd24a", 16);
           }
         }
 
@@ -267,20 +268,43 @@
       }
 
       for (const q of coins) {
-        const pulse = 1 + 0.08 * Math.sin(q.w);
+        const pulse = 1 + 0.06 * Math.sin(q.w);
+        const r = q.r * pulse;
         ctx.save();
         ctx.translate(q.x, q.y);
-        ctx.shadowBlur = 16;
-        ctx.shadowColor = "#7cff6b";
-        ctx.fillStyle = "#7cff6b";
+        ctx.rotate(q.rot || 0);
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = "#e2b23a";
+        const metal = ctx.createRadialGradient(-r * 0.35, -r * 0.4, 1, 0, 0, r);
+        metal.addColorStop(0, "#fff3b0");
+        metal.addColorStop(0.28, "#ffd24a");
+        metal.addColorStop(0.72, "#d49a18");
+        metal.addColorStop(1, "#8a5a0a");
         ctx.beginPath();
-        ctx.arc(0, 0, q.r * pulse, 0, Math.PI * 2);
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fillStyle = metal;
         ctx.fill();
         ctx.shadowBlur = 0;
-        ctx.fillStyle = "#d8ffc8";
+        ctx.strokeStyle = "#6d4308";
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
         ctx.beginPath();
-        ctx.arc(-2.5, -2.5, 3, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.arc(0, 0, r * 0.72, 0, Math.PI * 2);
+        ctx.strokeStyle = "#f3e08a";
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.58, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(120,70,10,0.45)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = "#8a5a0a";
+        ctx.font = "700 " + Math.round(r * 1.15) + "px ui-sans-serif,system-ui,sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("$", 0, 1);
+        ctx.fillStyle = "rgba(255,243,176,0.55)";
+        ctx.fillText("$", -0.6, 0);
         ctx.restore();
       }
 
